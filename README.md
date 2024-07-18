@@ -1,4 +1,5 @@
 **Basic Bluetooth Broadcasting**
+
 This code initializes the Bluetooth Serial library and sets the device name to "ESP32-WROOM-32E". In the setup() function:
 
 It initializes the serial communication at a baud rate of 115200.
