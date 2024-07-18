@@ -1,0 +1,76 @@
+#include <BluetoothSerial.h>
+#include <Adafruit_BME280.h>
+
+#define SEALEVELPRESSURE_HPA (1013.25)
+
+Adafruit_BME280 bme; // I2C
+
+typedef struct __attribute__((packed)) {
+  float temperature;
+  float humidity;
+  float pressure;
+  bool updated = false;
+  bool simulate = false;
+} sensor_data_t;
+
+sensor_data_t sensorData;
+
+void setup() {
+  Serial.begin(115200);
+  SerialBT.begin(deviceName); // Bluetooth device name
+  delay(5000);
+  Serial.println("ESP32 BLE Environmental Sensing BTClassic Example");
+  Serial.println("The device started, now you can pair it with Bluetooth!");
+
+  if (!bme.begin(BME280_ADDRESS_ALTERNATE)) {
+    Serial.println("BME280 not found. Data simulation enabled");
+    sensorData.simulate = true;
+  }
+}
+
+void loop() {
+  sensorTask(); // read BME280
+  if (sensorData.updated) {
+    sensorData.updated = false;
+    sendData();
+  }
+}
+
+void sendData() {
+  SerialBT.print("Temperature: ");
+  SerialBT.print(sensorData.temperature, 1);
+  SerialBT.println(" °C");
+
+  SerialBT.print("Humidity:    ");
+  SerialBT.print(sensorData.humidity, 1);
+  SerialBT.println(" %");
+
+  SerialBT.print("Pressure:   ");
+  SerialBT.print(sensorData.pressure / 100, 1);
+  SerialBT.println(" hPa");
+
+  SerialBT.println();
+}
+
+bool sensorTask() {
+  static uint32_t previousMillis = 0;
+
+  uint32_t currentMillis = millis();
+  if (currentMillis - previousMillis < sensorUpdateInterval) {
+    return false;
+  }
+  previousMillis = currentMillis;
+
+  if (!sensorData.simulate) {
+    sensorData.temperature = bme.readTemperature();
+    sensorData.humidity = bme.readHumidity();
+    sensorData.pressure = bme.readPressure();
+    sensorData.updated = true;
+  } else {
+    sensorData.temperature = 21.0 + random(50) / 10.0;
+    sensorData.humidity = 20.0 + random(300) / 10.0;
+    sensorData.pressure = 97000.0 + random(40000) / 10.0;
+    sensorData.updated = true;
+  }
+  return true;
+}
