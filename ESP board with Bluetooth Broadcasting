@@ -1,0 +1,21 @@
+#include <BluetoothSerial.h>
+
+BluetoothSerial SerialBT;
+#define deviceName "ESP32-WROOM-32E"
+
+void setup() {
+  Serial.begin(115200);
+  SerialBT.begin(deviceName); // Bluetooth device name
+  delay(5000);
+  Serial.println("ESP32 BLE Environmental Sensing BTClassic Example");
+  Serial.println("The device started, now you can pair it with Bluetooth!");
+}
+
+void loop() {
+  if (SerialBT.connected()) {
+    Serial.println("Connected to Bluetooth device");
+  } else {
+    Serial.println("Not connected to Bluetooth device");
+  }
+  delay(1000);
+}
